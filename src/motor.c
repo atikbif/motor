@@ -801,9 +801,9 @@ void MotorTask( void *pvParameters )
     portTickType xLastExecutionTime;
     xLastExecutionTime = xTaskGetTickCount();
 
-    RCC->AHBENR = b19+b18+b17; // enable GPIOA, B, C input clock
-    RCC->APB2ENR = b11+b9+b0; // enable tim1 and ADC input clocks
-    RCC->APB1ENR = b29; // enable DAC input clock
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_GPIOB | RCC_AHBPeriph_GPIOC, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG | RCC_APB2Periph_ADC1 | RCC_APB2Periph_TIM1, ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_DAC, ENABLE);
 
     //**********************************************
 
@@ -881,8 +881,15 @@ void MotorTask( void *pvParameters )
 
 
     // set up interrupts
-    NVIC_EnableIRQ(14);
-    __enable_irq();
+    //NVIC_EnableIRQ(14);
+    //__enable_irq();
+
+    NVIC_InitTypeDef NVIC_InitStructure;
+
+    NVIC_InitStructure.NVIC_IRQChannel = TIM1_CC_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
 
     // initialization
     run=0;

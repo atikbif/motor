@@ -135,6 +135,7 @@
 		<Unit filename="core\timers.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="inc\crc.h" />
 		<Unit filename="inc\definitions.h" />
 		<Unit filename="inc\FreeRTOSConfig.h" />
 		<Unit filename="inc\motor.h" />
@@ -234,6 +235,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="SPL\src\stm32f0xx_wwdg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\crc.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\main.c">
