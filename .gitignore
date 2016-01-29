@@ -1,0 +1,4 @@
+bin/
+obj/
+*.7z
+core/include/stdint.readme
