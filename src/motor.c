@@ -8,6 +8,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "settings.h"
+
 volatile unsigned char zcfound;
 volatile unsigned char phase;
 volatile unsigned char autostep;
@@ -36,6 +38,24 @@ volatile unsigned long holdcounter;
 volatile unsigned long alignmentcounter;
 volatile unsigned long rampspeed;
 volatile unsigned long bemfchannel;
+
+#define FILTER_CNT     8
+
+volatile unsigned short step_filter[FILTER_CNT]={0,0,0,0,0,0,0,0};
+volatile unsigned char filter_cnt = 0;
+
+unsigned char polepairs = 7;
+unsigned short alignmentdc = 100;
+unsigned short holdrpm = 500;
+unsigned short startuprpmpersecond = 100;
+
+extern unsigned short settings[SETTINGS_CNT];
+
+volatile unsigned long long0;
+volatile unsigned short minstep;
+unsigned short rpmGoal = 0;
+
+
 
 void TIM1_CC_IRQHandler (void);
 
@@ -148,8 +168,6 @@ void pwmisr(void)
 {
     //**********************************************************
 
-    unsigned long long0;
-
     ADC1->CHSELR = bemfchannel; // set ADC MUX to proper bemf channel
     ADC1->CR = b2;  // start adc conversion
     // housekeeping increment of some timers while adc is converting
@@ -175,8 +193,12 @@ void pwmisr(void)
         }
     } // end of if(autostep)
 
-
-    if(run==0) startstate=0;
+    if(run==0) {
+        startstate=0;
+        settings[0] = 0;
+        for(filter_cnt=0;filter_cnt++;filter_cnt<FILTER_CNT) step_filter[filter_cnt]=0;
+        filter_cnt = 0;
+    }
 
     switch(startstate)
     {
@@ -222,6 +244,9 @@ void pwmisr(void)
             {
                 holdcounter=0;
                 startstate=100;
+            }
+            if(filter_cnt<FILTER_CNT) {
+               step_filter[filter_cnt++] = step;
             }
             break;
 
@@ -295,8 +320,14 @@ void pwmisr(void)
             commcounter++;
             if(commcounter>commthreshold)
             {
+                if(filter_cnt<FILTER_CNT) {
+                   step_filter[filter_cnt++] = step;
+                }
                 phase++; // commutate
-                if(phase>5) phase=0;
+                if(phase>5)
+                {
+                    phase=0;
+                }
                 commutate2();
                 demagcounter=0;
                 demagthreshold = (step*demagallowance)>>8;
@@ -420,7 +451,7 @@ void  motorstartinit(void)
     fallingdelay=128;
 
     // sets open loop motor voltage (speed) 1200 for 100% duty cycle
-    runningdc = 600;
+    runningdc = alignmentdc;
 
     dutycyclehold=100;
 
@@ -798,6 +829,9 @@ unsigned short readadc( unsigned char chnl)
 
 void MotorTask( void *pvParameters )
 {
+    unsigned short rpmGoalCnt = 0;
+    unsigned char tmp=0;
+    unsigned long curStep = 0;
     portTickType xLastExecutionTime;
     xLastExecutionTime = xTaskGetTickCount();
 
@@ -929,14 +963,32 @@ void MotorTask( void *pvParameters )
 
         //if(potvalue<(4095-200)) run=255;
         //else if(potvalue>(4095-100)) run=0;
-        if( (4095ul-potvalue)>200) run=255;
-        if( (4095ul-potvalue)<100) run=0;
+
+
+
+        if(rpmGoal == 0) {
+            if( (4095ul-potvalue)>200) run=255;
+            if( (4095ul-potvalue)<100) run=0;
+
+            runningdc = ((4095-potvalue)*1200)>>12;
+            if(runningdc>1195) runningdc=1300;
+        }else {
+            run = 255;
+            //if(runningdc==0) runningdc = 100;
+            if(startstate>=120) {
+                rpmGoalCnt++;
+                if(rpmGoalCnt>=10) {
+                    rpmGoalCnt = 0;
+                    if((settings[0]<rpmGoal)&&(runningdc<1100)) runningdc++;
+                    else if((settings[0]>rpmGoal)&&(runningdc>10)) runningdc--;
+                }
+            }
+        }
 
         if(run) ledon;
         if(run==0) ledoff;
 
-        runningdc = ((4095-potvalue)*1200)>>12;
-        if(runningdc>1195) runningdc=1300;
+
         if(dutycyclehold && (runningdc>600)) runningdc=600;
 
         #ifdef ontimesampleenable
@@ -952,6 +1004,14 @@ void MotorTask( void *pvParameters )
         else
         {
             //clearmark;
+        }
+
+        if(filter_cnt>=FILTER_CNT) {
+            curStep = 0;
+            for(tmp=0;tmp<FILTER_CNT;tmp++) {curStep+=step_filter[tmp];}
+            curStep = curStep/FILTER_CNT;
+            filter_cnt = 0;
+            settings[0]=200000ul/(polepairs*curStep);
         }
 
         //DAC->DHR12R1 = potvalue; // put out for diagnostic purposes

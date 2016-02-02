@@ -2,13 +2,13 @@
 #define MOTORCONTROLSETTINGS_H_INCLUDED
 
 // note: a "4 pole motor" has 2 pole pairs
-#define polepairs 7
+//#define polepairs 7
 
 // 1200 is 100% duty cycle
-#define alignmentdc 300
+//#define alignmentdc 200
 
 // 1200 is 100% duty cycle
-#define rampupdc 440  // 300
+#define rampupdc (alignmentdc+100) //300//440  // 300
 
 
 // unit is 50uS PWM periods
@@ -31,17 +31,17 @@
 
 
 // RPM at end of ramp
-#define holdrpm 300 //300
+//#define holdrpm 500 //300
 
 // unit is 50uS PWM periods, time at hold RPM
 #define holdtime 3000  //2000
 
 // ramp up rate in rpm per second
 // reduce if stator is moving too fast to hold rotor
-#define startuprpmpersecond 300//200
+//#define startuprpmpersecond 100
 
 // determined completely by other settings
-#define   minstep (200000/polepairs/holdrpm)
+//#define   minstep (200000/polepairs/holdrpm)
 
 // determined completely by other settings
 #define rampuprate (startuprpmpersecond * polepairs)

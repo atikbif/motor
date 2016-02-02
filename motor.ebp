@@ -137,10 +137,13 @@
 		</Unit>
 		<Unit filename="inc\crc.h" />
 		<Unit filename="inc\definitions.h" />
+		<Unit filename="inc\eeprom.h" />
 		<Unit filename="inc\FreeRTOSConfig.h" />
+		<Unit filename="inc\modbus.h" />
 		<Unit filename="inc\motor.h" />
 		<Unit filename="inc\motorcontrolsettings.h" />
 		<Unit filename="inc\rs485.h" />
+		<Unit filename="inc\settings.h" />
 		<Unit filename="inc\stm32f0xx.h" />
 		<Unit filename="inc\stm32f0xx_conf.h" />
 		<Unit filename="inc\system_stm32f0xx.h" />
@@ -240,13 +243,22 @@
 		<Unit filename="src\crc.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src\eeprom.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src\main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\modbus.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\motor.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\rs485.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\settings.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\startup_stm32f0xx.S">

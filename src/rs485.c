@@ -7,32 +7,37 @@
 #include "task.h"
 
 #include "crc.h"
+#include "modbus.h"
+
+#include "eeprom.h"
 
 #define USART1_TDR_Address    0x40013828
-
 #define BUF_SIZE 128
 
 unsigned char canal_tx_buf[BUF_SIZE];
 volatile unsigned char canal_rx_buf[BUF_SIZE];
 volatile unsigned int canal_rx_cnt=0;
+request req;
 
-uint8_t TxBuffer1[] = "Communication between USART1-USART2 using DMA2";
 
 static void init_uart(void);
 inline unsigned long get_pc_tmr(void) {return TIM2->CNT;}
 void write_canal(unsigned short count);
 void USART1_IRQHandler(void);
 void DMA1_Channel2_3_IRQHandler(void);
+static void reset_cmd(void);
 
 void RS485Task( void *pvParameters )
 {
+    unsigned short tmp;
     portTickType xLastExecutionTime;
     xLastExecutionTime = xTaskGetTickCount();
     vTaskDelayUntil( &xLastExecutionTime, ( portTickType ) 2000 / portTICK_RATE_MS);
     init_uart();
+    req.tx_buf = (unsigned char*)canal_tx_buf; req.rx_buf = (unsigned char*)canal_rx_buf;
     while(1)
     { // backgroung loop
-        if((canal_rx_cnt)&&(get_pc_tmr()>100))
+        if((canal_rx_cnt)&&(get_pc_tmr()>10))
 		{
 		    if((canal_rx_buf[0]==0x01)&&(GetCRC16((unsigned char*)canal_rx_buf,canal_rx_cnt)==0))
 			{
@@ -40,8 +45,30 @@ void RS485Task( void *pvParameters )
 				switch(canal_rx_buf[1])
 				{
 				    case 0x00:break;
+				    case 0x03:
+						req.addr=((unsigned short)canal_rx_buf[2]<<8) | canal_rx_buf[3];
+						req.cnt=((unsigned short)canal_rx_buf[4]<<8) | canal_rx_buf[5];
+						tmp = read_holdregs(&req);
+						write_canal(tmp);
+						break;
+                    case 0x06:
+						req.addr=((unsigned short)canal_rx_buf[2]<<8) | canal_rx_buf[3];
+						req.cnt=((unsigned short)canal_rx_buf[4]<<8) | canal_rx_buf[5];
+						tmp = write_single_reg(&req);
+						write_canal(tmp);
+						break;
+					case 0x10:
+						req.addr=((unsigned short)canal_rx_buf[2]<<8) | canal_rx_buf[3];
+						req.cnt=((unsigned short)canal_rx_buf[4]<<8) | canal_rx_buf[5];
+						tmp=write_multi_regs(&req);
+						write_canal(tmp);
+						break;
+                    case 0xFE:
+                        reset_cmd();
+                        break;
 				}
 			}
+			canal_rx_cnt = 0;
 		}
         vTaskDelayUntil( &xLastExecutionTime, RS485_DELAY);
         //GPIOA->ODR ^= GPIO_Pin_11;
@@ -95,7 +122,7 @@ void init_uart(void)
     GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_0); // USART1_RX
 
     USART_InitStructure.USART_BaudRate = 115200;
-    USART_InitStructure.USART_WordLength = USART_WordLength_7b;
+    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
     USART_InitStructure.USART_StopBits = USART_StopBits_1;
     USART_InitStructure.USART_Parity = USART_Parity_No;
     USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
@@ -180,4 +207,9 @@ void DMA1_Channel2_3_IRQHandler(void)
 		DMA_ClearITPendingBit(DMA1_IT_GL2);
 		USART_ITConfig(USART1, USART_IT_TC, ENABLE);
 	}
+}
+
+void reset_cmd(void)
+{
+	SCB->AIRCR = ((unsigned long)0x05FA0000)| (unsigned long)0x04;
 }

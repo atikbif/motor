@@ -24,6 +24,8 @@
 #include "motor.h"
 #include "rs485.h"
 
+#include "eeprom.h"
+#include "settings.h"
 
 int main(void)
 {
@@ -34,6 +36,12 @@ int main(void)
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init( GPIOA, &GPIO_InitStructure );
     GPIO_SetBits(GPIOA,GPIO_Pin_11);
+
+    FLASH_Unlock();
+    /* EEPROM Init */
+    EE_Init();
+
+    read_settings();
 
     xTaskCreate( MotorTask, ( signed portCHAR * ) "Motor", configMINIMAL_STACK_SIZE, NULL, Motor_TASK_PRIORITY, NULL );
     xTaskCreate( RS485Task, ( signed portCHAR * ) "485", configMINIMAL_STACK_SIZE, NULL, RS485_TASK_PRIORITY, NULL );
@@ -97,5 +105,7 @@ void vApplicationTickHook( void )
 {
 
 }
+
+
 
 

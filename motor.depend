@@ -192,17 +192,19 @@
 	"stm32f0xx_wwdg.h"
 	"stm32f0xx_rcc.h"
 
-1454069562 source:d:\work\2016\motor\src\main.c
+1454421856 source:d:\work\2016\motor\src\main.c
 	"stm32f0xx_conf.h"
 	"string.h"
 	"FreeRTOS.h"
 	"task.h"
 	"motor.h"
 	"rs485.h"
+	"eeprom.h"
+	"settings.h"
 
 1453115023 d:\work\2016\motor\inc\definitions.h
 
-1453984641 d:\work\2016\motor\inc\motorcontrolsettings.h
+1454422511 d:\work\2016\motor\inc\motorcontrolsettings.h
 
 1453980688 source:d:\work\2016\motor\src\startup_stm32f0xx.s
 
@@ -221,7 +223,7 @@
 	"projdefs.h"
 	"portable.h"
 
-1454067955 d:\work\2016\motor\inc\freertosconfig.h
+1454421594 d:\work\2016\motor\inc\freertosconfig.h
 	<stdint.h>
 
 1445001178 d:\work\2016\motor\core\include\projdefs.h
@@ -378,27 +380,49 @@
 	"queue.h"
 	"timers.h"
 
-1453984081 d:\work\2016\motor\inc\motor.h
+1454421194 d:\work\2016\motor\inc\motor.h
 
-1454070970 source:d:\work\2016\motor\src\motor.c
+1454427386 source:d:\work\2016\motor\src\motor.c
 	"motor.h"
 	"definitions.h"
 	"motorcontrolsettings.h"
 	"stm32f0xx_conf.h"
 	"FreeRTOS.h"
 	"task.h"
+	"settings.h"
 
-1453984408 d:\work\2016\motor\inc\rs485.h
+1454421964 d:\work\2016\motor\inc\rs485.h
 
-1454074600 source:d:\work\2016\motor\src\rs485.c
+1454421964 source:d:\work\2016\motor\src\rs485.c
 	"rs485.h"
 	"stm32f0xx_conf.h"
 	"FreeRTOS.h"
 	"task.h"
 	"crc.h"
+	"modbus.h"
+	"eeprom.h"
 
 1342616692 source:d:\work\2016\motor\src\crc.c
 	"crc.h"
 
-1342616692 d:\work\2016\motor\inc\crc.h
+1454327537 d:\work\2016\motor\inc\crc.h
+
+1454416035 source:d:\work\2016\motor\src\modbus.c
+	"modbus.h"
+	"crc.h"
+	"settings.h"
+
+1454329182 d:\work\2016\motor\inc\modbus.h
+
+1454422732 d:\work\2016\motor\inc\settings.h
+
+1454427222 source:d:\work\2016\motor\src\settings.c
+	"settings.h"
+	"eeprom.h"
+
+1454418036 source:d:\work\2016\motor\src\eeprom.c
+	"eeprom.h"
+
+1454425157 d:\work\2016\motor\inc\eeprom.h
+	"stm32f0xx.h"
 
