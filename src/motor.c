@@ -39,9 +39,12 @@ volatile unsigned long alignmentcounter;
 volatile unsigned long rampspeed;
 volatile unsigned long bemfchannel;
 
-#define FILTER_CNT     8
+volatile unsigned short curStep = 0;
+volatile unsigned short prevStep = 0;
 
-volatile unsigned short step_filter[FILTER_CNT]={0,0,0,0,0,0,0,0};
+#define FILTER_CNT     4
+
+volatile unsigned short step_filter[FILTER_CNT]={0,0,0,0};
 volatile unsigned char filter_cnt = 0;
 
 unsigned char polepairs = 7;
@@ -287,8 +290,11 @@ void pwmisr(void)
             {
                 if((bemfsample>zcthreshold)||(zccounter>maxstep) )
                 {
-                    if(zcfound) step = zccounter;
-                    commthreshold = (step*risingdelay)>>8;
+                    if(zcfound){ if(prevStep) {step = (zccounter + prevStep)/2;}else {step = zccounter;} prevStep = zccounter; }
+                    else prevStep = 0;
+
+
+                    commthreshold = (((unsigned short)(step*1))*risingdelay)>>8;
                     zccounter=0;
                     commcounter=0;
                     startstate=150;
@@ -301,8 +307,11 @@ void pwmisr(void)
             {
                 if((bemfsample<zcthreshold)||(zccounter>maxstep) )
                 {
-                    if(zcfound) step = zccounter;
-                    commthreshold = (step*fallingdelay)>>8;
+                    if(zcfound){ if(prevStep) {step = (zccounter + prevStep)/2;}else {step = zccounter;} prevStep = zccounter; }
+                    else prevStep = 0;
+
+
+                    commthreshold = (((unsigned short)(step*1))*risingdelay)>>8;
                     zccounter=0;
                     commcounter=0;
                     startstate=150;
@@ -831,7 +840,8 @@ void MotorTask( void *pvParameters )
 {
     unsigned short rpmGoalCnt = 0;
     unsigned char tmp=0;
-    unsigned long curStep = 0;
+    unsigned long stepSum = 0;
+
     portTickType xLastExecutionTime;
     xLastExecutionTime = xTaskGetTickCount();
 
@@ -893,6 +903,7 @@ void MotorTask( void *pvParameters )
 
 
     // tim1 setup
+    TIM1->PSC = 1;
     TIM1->SMCR = b15+b4+b5+b6; // make ETR (external trigger) input active low
     TIM1->CR2= 0;
     TIM1->CCR1= 200;
@@ -977,10 +988,10 @@ void MotorTask( void *pvParameters )
             //if(runningdc==0) runningdc = 100;
             if(startstate>=120) {
                 rpmGoalCnt++;
-                if(rpmGoalCnt>=10) {
+                if(rpmGoalCnt>=1) {
                     rpmGoalCnt = 0;
-                    if((settings[0]<rpmGoal)&&(runningdc<1100)) runningdc++;
-                    else if((settings[0]>rpmGoal)&&(runningdc>10)) runningdc--;
+                    if((settings[0]<rpmGoal)&&(runningdc<1100)&&(((rpmGoal-settings[0])*100)/rpmGoal>=5)) runningdc++;
+                    else if((settings[0]>rpmGoal)&&(runningdc>10)&&(((settings[0]-rpmGoal)*100)/rpmGoal>=5)&&(runningdc>1)) runningdc--;
                 }
             }
         }
@@ -1007,9 +1018,9 @@ void MotorTask( void *pvParameters )
         }
 
         if(filter_cnt>=FILTER_CNT) {
-            curStep = 0;
-            for(tmp=0;tmp<FILTER_CNT;tmp++) {curStep+=step_filter[tmp];}
-            curStep = curStep/FILTER_CNT;
+            stepSum = 0;
+            for(tmp=0;tmp<FILTER_CNT;tmp++) {stepSum+=step_filter[tmp];}
+            curStep = stepSum/FILTER_CNT;
             filter_cnt = 0;
             settings[0]=200000ul/(polepairs*curStep);
         }
