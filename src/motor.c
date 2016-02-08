@@ -48,9 +48,9 @@ volatile unsigned short step_filter[FILTER_CNT]={0,0,0,0};
 volatile unsigned char filter_cnt = 0;
 
 unsigned char polepairs = 7;
-unsigned short alignmentdc = 100;
+unsigned short alignmentdc = 200;
 unsigned short holdrpm = 500;
-unsigned short startuprpmpersecond = 100;
+unsigned short startuprpmpersecond = 500;
 
 extern unsigned short settings[SETTINGS_CNT];
 

@@ -35,6 +35,13 @@ void RS485Task( void *pvParameters )
     vTaskDelayUntil( &xLastExecutionTime, ( portTickType ) 2000 / portTICK_RATE_MS);
     init_uart();
     req.tx_buf = (unsigned char*)canal_tx_buf; req.rx_buf = (unsigned char*)canal_rx_buf;
+
+    IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+    IWDG_SetPrescaler(IWDG_Prescaler_64); // IWDG counter clock: 40KHz(LSI) / 64  (1.6 ms)
+    IWDG_SetReload(150); //Set counter reload value
+    IWDG_ReloadCounter();
+    IWDG_Enable();
+
     while(1)
     { // backgroung loop
         if((canal_rx_cnt)&&(get_pc_tmr()>10))
@@ -71,6 +78,7 @@ void RS485Task( void *pvParameters )
 			canal_rx_cnt = 0;
 		}
         vTaskDelayUntil( &xLastExecutionTime, RS485_DELAY);
+        IWDG_ReloadCounter();
         //GPIOA->ODR ^= GPIO_Pin_11;
     }
 }

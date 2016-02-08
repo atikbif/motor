@@ -382,7 +382,7 @@
 
 1454421194 d:\work\2016\motor\inc\motor.h
 
-1454501795 source:d:\work\2016\motor\src\motor.c
+1454916580 source:d:\work\2016\motor\src\motor.c
 	"motor.h"
 	"definitions.h"
 	"motorcontrolsettings.h"
@@ -416,13 +416,13 @@
 
 1454422732 d:\work\2016\motor\inc\settings.h
 
-1454427222 source:d:\work\2016\motor\src\settings.c
+1454916580 source:d:\work\2016\motor\src\settings.c
 	"settings.h"
 	"eeprom.h"
 
 1454418036 source:d:\work\2016\motor\src\eeprom.c
 	"eeprom.h"
 
-1454425157 d:\work\2016\motor\inc\eeprom.h
+1454916580 d:\work\2016\motor\inc\eeprom.h
 	"stm32f0xx.h"
 
