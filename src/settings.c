@@ -23,7 +23,7 @@ extern unsigned short rpmGoal;
 #define STARTUP_RPM_PER_SECOND_MAX      1000
 #define STARTUP_RPM_PER_SECOND_MIN      5
 #define RPM_GOAL_MAX                    20000
-#define RPM_GOAL_MIN                    300
+#define RPM_GOAL_MIN                    0
 
 
 
@@ -65,7 +65,7 @@ void setParam(unsigned short addr, unsigned short value)
             case 5:
                 if((value>=RPM_GOAL_MIN)&&(value<=RPM_GOAL_MAX)) {
                     settings[addr] = VarDataTab[4] = rpmGoal = value;
-                    EE_WriteVariable(VirtAddVarTab[4], VarDataTab[4]);
+                    //EE_WriteVariable(VirtAddVarTab[4], VarDataTab[4]);
                 }
                 break;
         }
@@ -96,9 +96,9 @@ void read_settings(void)
     else if((VarDataTab[3]>=STARTUP_RPM_PER_SECOND_MIN)&&(VarDataTab[3]<=STARTUP_RPM_PER_SECOND_MAX)) startuprpmpersecond = VarDataTab[3];
     settings[4] = startuprpmpersecond;
 
-    status = EE_ReadVariable(VirtAddVarTab[4], &VarDataTab[4]);
+    /*status = EE_ReadVariable(VirtAddVarTab[4], &VarDataTab[4]);
     if(status!=0) {EE_WriteVariable(VirtAddVarTab[4],rpmGoal);}
-    else if((VarDataTab[4]>=RPM_GOAL_MIN)&&(VarDataTab[4]<=RPM_GOAL_MAX)) rpmGoal = VarDataTab[4];
+    else if((VarDataTab[4]>=RPM_GOAL_MIN)&&(VarDataTab[4]<=RPM_GOAL_MAX)) rpmGoal = VarDataTab[4];*/
     settings[5] = rpmGoal;
 
     minstep = 200000/polepairs/holdrpm;
